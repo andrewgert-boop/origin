@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Talent Portrait Report</title>
+    <style>
+        .section { margin-bottom: 30px; }
+        .competency { margin-bottom: 15px; }
+        .level-indicator {
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-top: 5px;
+        }
+        .level-fill {
+            height: 100%;
+            border-radius: 10px;
+            background-color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <h1>Talent Portrait Report</h1>
+    <p>Generated for: {{ report.candidate_name }}</p>
+    <p>Date: {{ report.generation_date }}</p>
+
+    <div class="section">
+        <h2>Business Archetypes</h2>
+        {% for archetype, data in report.business_archetypes.items() %}
+        <div class="competency">
+            <h3>{{ archetype }}: {{ data.level }} ({{ data.percentage }}%)</h3>
+            <div class="level-indicator">
+                <div class="level-fill" style="width: {{ data.percentage }}%"></div>
+            </div>
+            <p>{{ data.description }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <h2>Emotional Intelligence</h2>
+        {% for aspect, data in report.emotional_intelligence.items() %}
+        <div class="competency">
+            <h3>{{ aspect }}: {{ data.level }} ({{ data.percentage }}%)</h3>
+            <div class="level-indicator">
+                <div class="level-fill" style="width: {{ data.percentage }}%"></div>
+            </div>
+            <p>{{ data.description }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Other sections similarly -->
+</body>
+</html>
