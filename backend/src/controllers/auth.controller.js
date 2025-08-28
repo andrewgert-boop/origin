@@ -10,19 +10,26 @@ exports.register = async (req, res) => {
   try {
     const { email, password, role, company_id } = req.body;
 
-    // 1. Проверяем, существует ли пользователь
+    // 1. Проверка обязательных полей
+    if (!email || !password || !role || !company_id) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    // 2. Проверка длины пароля
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    // 3. Проверка существования пользователя
     const existingUser = await User.findByEmail(email);
     if (existingUser) {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
-    // 2. Хешируем пароль
-    if (!password || password.length < 6) {
-      return res.status(400).json({ error: 'Password is required and must be at least 6 characters' });
-    }
+    // 4. Хешируем пароль
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // 3. Создаём пользователя с password_hash
+    // 5. Создаём пользователя с password_hash
     const user = await User.create({
       email,
       password_hash: hashedPassword,
@@ -31,11 +38,16 @@ exports.register = async (req, res) => {
       status: 'active'
     });
 
-    logger.info('User registered: ${user.email}, role: ${user.role}');
+    logger.info('User registered: ' + user.email + ', role: ' + user.role);
 
     res.status(201).json({
       message: 'User registered successfully',
-      user: { id: user.id, email: user.email, role: user.role, companyId: user.company_id },
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        companyId: user.company_id
+      }
     });
   } catch (err) {
     logger.error('Registration error:', err);
@@ -63,11 +75,16 @@ exports.login = async (req, res) => {
       { expiresIn: JWT_EXPIRES_IN }
     );
 
-    logger.info('User logged in: ${user.email}');
+    logger.info('User logged in: ' + user.email);
 
     res.json({
       token,
-      user: { id: user.id, email: user.email, role: user.role, companyId: user.company_id },
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        companyId: user.company_id
+      }
     });
   } catch (err) {
     logger.error('Login error:', err);

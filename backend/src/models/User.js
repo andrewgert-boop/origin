@@ -39,10 +39,17 @@ class User {
 
     // Сохраняем
     const result = await db.query(
-      'INSERT INTO users (company_id, email, phone, role, status) ' +
-      'VALUES ($1, $2, $3, $4, $5) ' +
+      'INSERT INTO users (company_id, email, phone, password_hash, role, status) ' +
+      'VALUES ($1, $2, $3, $4, $5, $6) ' +
       'RETURNING *',
-      [encryptedData.company_id, encryptedData.email, encryptedData.phone, encryptedData.role, encryptedData.status]
+      [
+        encryptedData.company_id,
+        encryptedData.email,
+        encryptedData.phone,
+        encryptedData.password_hash, // ✅ Должно быть!
+        encryptedData.role,
+        encryptedData.status
+      ]
     );
 
     // Расшифровываем перед возвратом
