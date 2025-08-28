@@ -51,6 +51,7 @@ class User {
 
     const encryptedData = { ...userData };
 
+    // ✅ Шифруем только email и phone
     if (encryptedData.email) {
       encryptedData.email = encryptData(encryptedData.email, key);
     }
@@ -58,7 +59,7 @@ class User {
       encryptedData.phone = encryptData(encryptedData.phone, key);
     }
 
-    // ✅ Добавлен password_hash в INSERT
+    // ✅ Вставляем password_hash "как есть" — НЕ ШИФРУЕМ!
     const result = await db.query(
       'INSERT INTO users (company_id, email, phone, password_hash, role, status) ' +
       'VALUES ($1, $2, $3, $4, $5, $6) ' +
@@ -67,7 +68,7 @@ class User {
         encryptedData.company_id,
         encryptedData.email,
         encryptedData.phone,
-        encryptedData.password_hash, // ✅ Теперь сохраняется
+        encryptedData.password_hash, // ✅ Не шифруем! Это bcrypt-хэш
         encryptedData.role,
         encryptedData.status || 'active'
       ]
