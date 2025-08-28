@@ -3,17 +3,19 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Копируем package.json и устанавливаем зависимости (в Linux!)
+# 1. Копируем только package.json
 COPY package*.json ./
+
+# 2. Устанавливаем зависимости ВНУТРИ контейнера (под linux-arm64)
 RUN npm ci --include=dev
 
-# Копируем исходный код
+# 3. Копируем исходники
 COPY . .
 
-# Собираем проект — esbuild установится для linux-arm64
+# 4. Собираем (esbuild установится для linux-arm64)
 RUN npm run build
 
-# Устанавливаем serve
+# 5. Устанавливаем serve
 RUN npm install -g serve
 
 EXPOSE 5173
