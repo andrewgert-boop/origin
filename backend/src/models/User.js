@@ -11,23 +11,47 @@ class User {
     this.role = data.role;
     this.status = data.status;
     this.created_at = data.created_at;
+    // password_hash НЕ передаём в конструктор
   }
 
   static async findByEmail(email) {
     const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-    return result.rows[0] ? new User(result.rows[0]) : null;
-  }
+    if (!result.rows[0]) return null;
 
-  static async create(userData) {
     // Получаем название компании
-    const companyResult = await db.query('SELECT name FROM companies WHERE id = $1', [userData.company_id]);
+    const user = result.rows[0];
+    const companyResult = await db.query('SELECT name FROM companies WHERE id = $1', [user.company_id]);
     if (companyResult.rows.length === 0) {
       throw new Error('Company not found');
     }
     const companyName = companyResult.rows[0].name;
 
-    // Шифруем данные
+    // Расшифровываем только публичные поля
     const key = generateKey(companyName, MASTER_SECRET);
+    const decrypted = { ...user };
+
+    try {
+      if (decrypted.email) {
+        decrypted.email = decryptData(decrypted.email, key);
+      }
+      if (decrypted.phone) {
+        decrypted.phone = decryptData(decrypted.phone, key);
+      }
+    } catch (err) {
+      console.error('Decryption error for User:', err.message);
+    }
+
+    return new User(decrypted);
+  }
+
+  static async create(userData) {
+    const companyResult = await db.query('SELECT name FROM companies WHERE id = $1', [userData.company_id]);
+    if (companyResult.rows.length === 0) {
+      throw new Error('Company not found');
+    }
+    const companyName = companyResult.rows[0].name;
+    const key = generateKey(companyName, MASTER_SECRET);
+
     const encryptedData = { ...userData };
 
     if (encryptedData.email) {
@@ -37,7 +61,6 @@ class User {
       encryptedData.phone = encryptData(encryptedData.phone, key);
     }
 
-    // Сохраняем
     const result = await db.query(
       'INSERT INTO users (company_id, email, phone, password_hash, role, status) ' +
       'VALUES ($1, $2, $3, $4, $5, $6) ' +
@@ -46,35 +69,13 @@ class User {
         encryptedData.company_id,
         encryptedData.email,
         encryptedData.phone,
-        encryptedData.password_hash, // ✅ Должно быть!
+        encryptedData.password_hash, // уже хеширован
         encryptedData.role,
-        encryptedData.status
+        encryptedData.status || 'active'
       ]
     );
 
-    // Расшифровываем перед возвратом
-    return await this.afterFind(result.rows[0], companyName);
-  }
-
-  static async afterFind(data, companyName) {
-    if (!data) return null;
-
-    const key = generateKey(companyName, MASTER_SECRET);
-    const result = { ...data };
-
-    try {
-      if (result.email) {
-        result.email = decryptData(result.email, key);
-      }
-      if (result.phone) {
-        result.phone = decryptData(result.phone, key);
-      }
-    } catch (err) {
-      console.error('Decryption error for User:', err.message);
-      result.decryptionError = true;
-    }
-
-    return new User(result);
+    return new User(result.rows[0]);
   }
 }
 
