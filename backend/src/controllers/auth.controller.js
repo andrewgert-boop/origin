@@ -10,20 +10,28 @@ exports.register = async (req, res) => {
   try {
     const { email, password, role, company_id } = req.body;
 
+    // 1. Проверяем, существует ли пользователь
     const existingUser = await User.findByEmail(email);
     if (existingUser) {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
+    // 2. Хешируем пароль
+    if (!password || password.length < 6) {
+      return res.status(400).json({ error: 'Password is required and must be at least 6 characters' });
+    }
     const hashedPassword = await bcrypt.hash(password, 12);
+
+    // 3. Создаём пользователя с password_hash
     const user = await User.create({
       email,
       password_hash: hashedPassword,
       role,
       company_id,
+      status: 'active'
     });
 
-    logger.info(`User registered: ${user.email}, role: ${user.role}`);
+    logger.info('User registered: ${user.email}, role: ${user.role}');
 
     res.status(201).json({
       message: 'User registered successfully',
@@ -55,7 +63,7 @@ exports.login = async (req, res) => {
       { expiresIn: JWT_EXPIRES_IN }
     );
 
-    logger.info(`User logged in: ${user.email}`);
+    logger.info('User logged in: ${user.email}');
 
     res.json({
       token,

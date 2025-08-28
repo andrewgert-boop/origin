@@ -7,27 +7,48 @@ class User {
     this.id = data.id;
     this.company_id = data.company_id;
     this.email = data.email;
-    this.phone = data.phone;
+    this.phone = data.phone || null;
     this.role = data.role;
     this.status = data.status;
     this.created_at = data.created_at;
   }
 
-  // Автоматическое шифрование перед сохранением
-  static async beforeSave(data, companyName) {
-    const key = generateKey(companyName, MASTER_SECRET);
-
-    if (data.email) {
-      data.email = encryptData(data.email, key);
-    }
-    if (data.phone) {
-      data.phone = encryptData(data.phone, key);
-    }
-
-    return data;
+  static async findByEmail(email) {
+    const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+    return result.rows[0] ? new User(result.rows[0]) : null;
   }
 
-  // Автоматическая расшифровка после чтения
+  static async create(userData) {
+    // Получаем название компании
+    const companyResult = await db.query('SELECT name FROM companies WHERE id = $1', [userData.company_id]);
+    if (companyResult.rows.length === 0) {
+      throw new Error('Company not found');
+    }
+    const companyName = companyResult.rows[0].name;
+
+    // Шифруем данные
+    const key = generateKey(companyName, MASTER_SECRET);
+    const encryptedData = { ...userData };
+
+    if (encryptedData.email) {
+      encryptedData.email = encryptData(encryptedData.email, key);
+    }
+    if (encryptedData.phone) {
+      encryptedData.phone = encryptData(encryptedData.phone, key);
+    }
+
+    // Сохраняем
+    const result = await db.query(
+      'INSERT INTO users (company_id, email, phone, role, status) ' +
+      'VALUES ($1, $2, $3, $4, $5) ' +
+      'RETURNING *',
+      [encryptedData.company_id, encryptedData.email, encryptedData.phone, encryptedData.role, encryptedData.status]
+    );
+
+    // Расшифровываем перед возвратом
+    return await this.afterFind(result.rows[0], companyName);
+  }
+
   static async afterFind(data, companyName) {
     if (!data) return null;
 
@@ -43,40 +64,10 @@ class User {
       }
     } catch (err) {
       console.error('Decryption error for User:', err.message);
-      // Не падаем, возвращаем зашифрованные данные с флагом
       result.decryptionError = true;
     }
 
     return new User(result);
-  }
-
-  static async findById(id, companyName) {
-    const result = await db.query('SELECT * FROM users WHERE id = $1', [id]);
-    const user = result.rows[0];
-    return await this.afterFind(user, companyName);
-  }
-
-  static async create(userData, companyName) {
-    const encryptedData = await this.beforeSave(userData, companyName);
-    const result = await db.query(
-      `INSERT INTO users (company_id, email, phone, role, status)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, company_id, email, phone, role, status, created_at`,
-      [encryptedData.company_id, encryptedData.email, encryptedData.phone, encryptedData.role, encryptedData.status]
-    );
-    return await this.afterFind(result.rows[0], companyName);
-  }
-
-  static async update(id, data, companyName) {
-    const encryptedData = await this.beforeSave(data, companyName);
-    const result = await db.query(
-      `UPDATE users
-       SET email = $1, phone = $2, role = $3, status = $4
-       WHERE id = $5
-       RETURNING id, company_id, email, phone, role, status, created_at`,
-      [encryptedData.email, encryptedData.phone, encryptedData.role, encryptedData.status, id]
-    );
-    return await this.afterFind(result.rows[0], companyName);
   }
 }
 
