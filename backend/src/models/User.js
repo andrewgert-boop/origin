@@ -11,14 +11,12 @@ class User {
     this.role = data.role;
     this.status = data.status;
     this.created_at = data.created_at;
-    // password_hash НЕ передаём в конструктор
   }
 
   static async findByEmail(email) {
     const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
     if (!result.rows[0]) return null;
 
-    // Получаем название компании
     const user = result.rows[0];
     const companyResult = await db.query('SELECT name FROM companies WHERE id = $1', [user.company_id]);
     if (companyResult.rows.length === 0) {
@@ -26,7 +24,6 @@ class User {
     }
     const companyName = companyResult.rows[0].name;
 
-    // Расшифровываем только публичные поля
     const key = generateKey(companyName, MASTER_SECRET);
     const decrypted = { ...user };
 
@@ -61,6 +58,7 @@ class User {
       encryptedData.phone = encryptData(encryptedData.phone, key);
     }
 
+    // ✅ Добавлен password_hash в INSERT
     const result = await db.query(
       'INSERT INTO users (company_id, email, phone, password_hash, role, status) ' +
       'VALUES ($1, $2, $3, $4, $5, $6) ' +
@@ -69,7 +67,7 @@ class User {
         encryptedData.company_id,
         encryptedData.email,
         encryptedData.phone,
-        encryptedData.password_hash, // уже хеширован
+        encryptedData.password_hash, // ✅ Теперь сохраняется
         encryptedData.role,
         encryptedData.status || 'active'
       ]
