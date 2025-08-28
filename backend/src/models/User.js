@@ -19,9 +19,9 @@ class User {
   static async create(userData) {
     const { email, password_hash, role, company_id } = userData;
     const result = await db.query(
-      \`INSERT INTO users (email, password_hash, role, company_id, status)
-       VALUES (\$1, \$2, \$3, \$4, 'active')
-       RETURNING *\`,
+      `INSERT INTO users (email, password_hash, role, company_id, status)
+       VALUES ($1, $2, $3, $4, 'active')
+       RETURNING *`,
       [email, password_hash, role, company_id]
     );
     return new User(result.rows[0]);

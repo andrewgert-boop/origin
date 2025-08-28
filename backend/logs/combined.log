@@ -1,0 +1,2 @@
+{"level":"info","message":"Server running on http://0.0.0.0:3000","service":"gert-backend","timestamp":"2025-08-28T16:51:05.932Z"}
+{"level":"warn","message":"Route not found: GET /","service":"gert-backend","timestamp":"2025-08-28T16:52:48.620Z"}

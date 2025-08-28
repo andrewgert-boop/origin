@@ -1,22 +1,21 @@
+# backend/Dockerfile
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Копируем файлы зависимостей
 COPY package*.json ./
-
-# Устанавливаем зависимости (только production)
 RUN npm ci --only=production
 
-# Копируем исходный код
+# Создаём папку для логов
+RUN mkdir -p /app/logs
+
 COPY . .
 
-# Создаём пользователя node для безопасности
+# Даём права пользователю node
 RUN chown -R node:node /app
+
 USER node
 
-# Открываем порт
 EXPOSE 3000
 
-# Запускаем приложение
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev"]
