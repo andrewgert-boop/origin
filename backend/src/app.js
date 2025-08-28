@@ -4,6 +4,9 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
 const authRoutes = require('./routes/auth.routes');
+const companyRoutes = require('./routes/companies.routes');
+const employeeRoutes = require('./routes/employees.routes');
+const surveyTemplateRoutes = require('./routes/surveyTemplates.routes');
 const logger = require('./config/logger');
 
 const app = express();
@@ -25,6 +28,9 @@ app.use('/api/auth', require('./middleware/rateLimit'));
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/companies', companyRoutes);
+app.use('/api/employees', employeeRoutes);
+app.use('/api/survey-templates', surveyTemplateRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
