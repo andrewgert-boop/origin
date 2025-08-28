@@ -18,4 +18,4 @@ RUN npm install -g serve
 
 EXPOSE 5173
 
-CMD ["serve", "-s", "dist", "-p", "5173", "--single"]
+CMD ["serve", "-s", "dist", "-p", "5173", "--single", "--no-clipboard", "--no-compression"]
