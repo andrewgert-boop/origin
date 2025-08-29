@@ -3,21 +3,22 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# 1. Копируем только package.json
 COPY package*.json ./
+RUN npm ci --only=production
 
-# 2. Устанавливаем зависимости ВНУТРИ контейнера (под linux-arm64)
-RUN npm ci --include=dev
+# Устанавливаем esbuild-wasm для совместимости с Apple Silicon (arm64)
+RUN npm install esbuild-wasm
 
-# 3. Копируем исходники
 COPY . .
 
-# 4. Собираем (esbuild установится для linux-arm64)
+# Используем esbuild-wasm вместо нативного esbuild
+ENV ESBUILD_BINARY_NAME=esbuild-wasm
+
+# Сборка проекта
 RUN npm run build
 
-# 5. Устанавливаем serve
+# Устанавливаем serve для раздачи статики
 RUN npm install -g serve
 
-EXPOSE 5173
-
-CMD ["serve", "-s", "dist", "-p", "5173", "--single", "--no-clipboard", "--no-compression"]
+# Запуск сервера
+CMD ["serve", "-s", "dist"]

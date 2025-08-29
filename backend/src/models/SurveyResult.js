@@ -1,28 +1,40 @@
-// Пример модели с шифрованием
+// Модель результатов анализа
+// Результаты НЕ шифруются — только сохраняются с интерпретацией
+
 const db = require('../config/db');
-const { generateKey, encryptData, decryptData } = require('../utils/encryption.service');
-const { MASTER_SECRET } = require('../config/crypto.config');
 
 class SurveyResult {
-  // ... другие методы
-
-  static async beforeSave(data, companyName) {
-    const key = generateKey(companyName, MASTER_SECRET);
-    const fields = ['respondent_name', 'email', 'position', 'department', 'notes'];
-    for (const field of fields) {
-      if (data[field]) {
-        data[field] = encryptData(data[field], key);
-      }
-    }
-    return data;
+  constructor(data) {
+    this.id = data.id;
+    this.survey_assignment_id = data.survey_assignment_id;
+    this.parameter_name = data.parameter_name;
+    this.raw_score = data.raw_score;
+    this.standardized_score = data.standardized_score;
+    this.interpretation_text = data.interpretation_text;
+    this.indicator = data.indicator;
+    this.created_at = data.created_at;
   }
 
-  static async afterFind(data, companyName) {
-    if (!data) return null;
-    const key = generateKey(companyName, MASTER_SECRET);
-    const result = { ...data };
-    // ... расшифровка полей
-    return result;
+  // Сохраняет результаты (без шифрования)
+  static async saveResults(assignmentId, results) {
+    const query = `
+      INSERT INTO survey_results 
+      (survey_assignment_id, parameter_name, raw_score, standardized_score, interpretation_text, indicator)
+      VALUES ${results.map((_, i) => `($${i*6+1}, $${i*6+2}, $${i*6+3}, $${i*6+4}, $${i*6+5}, $${i*6+6})`).join(', ')}
+    `;
+
+    const values = [];
+    for (const r of results) {
+      values.push(assignmentId, r.parameter_name, r.raw_score, r.standardized_score, r.interpretation_text, r.indicator);
+    }
+
+    await db.query(query, values);
+  }
+
+  // Получает результаты по ID назначения
+  static async findByAssignmentId(assignmentId) {
+    const result = await db.query('SELECT * FROM survey_results WHERE survey_assignment_id = $1', [assignmentId]);
+    return result.rows;
   }
 }
 
