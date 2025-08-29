@@ -13,32 +13,49 @@ class User {
     this.created_at = data.created_at;
   }
 
+  /**
+   * Найти пользователя по email
+   * Важно: шифруем email и ищем в БД в зашифрованном виде
+   */
   static async findByEmail(email) {
-    const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (!result.rows[0]) return null;
+    // Сначала получаем компанию по company_id
+    // Но мы не знаем company_id заранее → нужно искать по всем компаниям?
 
-    const user = result.rows[0];
-    const companyResult = await db.query('SELECT name FROM companies WHERE id = $1', [user.company_id]);
-    if (companyResult.rows.length === 0) {
-      throw new Error('Company not found');
-    }
-    const companyName = companyResult.rows[0].name;
+    // Временное решение: предположим, что email шифруется с master-ключом,
+    // или используем отдельный индекс для поиска.
+    // Но в текущей архитектуре — нужно знать companyName.
 
-    const key = generateKey(companyName, MASTER_SECRET);
-    const decrypted = { ...user };
+    // Альтернатива: хранить hash(email) для поиска
+    // Пока — упростим: получим все компании и попробуем для каждой
+    const companyResult = await db.query('SELECT id, name FROM companies');
+    const companies = companyResult.rows;
 
-    try {
-      if (decrypted.email) {
-        decrypted.email = decryptData(decrypted.email, key);
+    for (const company of companies) {
+      const key = generateKey(company.name, MASTER_SECRET);
+      const encryptedEmail = encryptData(email, key);
+
+      const result = await db.query('SELECT * FROM users WHERE email = $1', [encryptedEmail]);
+      if (result.rows[0]) {
+        // Нашли — теперь расшифруем и вернём
+        const user = result.rows[0];
+        const decrypted = { ...user };
+
+        try {
+          if (decrypted.email) {
+            decrypted.email = decryptData(decrypted.email, key);
+          }
+          if (decrypted.phone) {
+            decrypted.phone = decryptData(decrypted.phone, key);
+          }
+        } catch (err) {
+          console.error('Decryption error for User:', err.message);
+        }
+
+        return new User(decrypted);
       }
-      if (decrypted.phone) {
-        decrypted.phone = decryptData(decrypted.phone, key);
-      }
-    } catch (err) {
-      console.error('Decryption error for User:', err.message);
     }
 
-    return new User(decrypted);
+    return null;
   }
 
   static async create(userData) {
@@ -51,7 +68,6 @@ class User {
 
     const encryptedData = { ...userData };
 
-    // ✅ Шифруем только email и phone
     if (encryptedData.email) {
       encryptedData.email = encryptData(encryptedData.email, key);
     }
@@ -59,7 +75,6 @@ class User {
       encryptedData.phone = encryptData(encryptedData.phone, key);
     }
 
-    // ✅ Вставляем password_hash "как есть" — НЕ ШИФРУЕМ!
     const result = await db.query(
       'INSERT INTO users (company_id, email, phone, password_hash, role, status) ' +
       'VALUES ($1, $2, $3, $4, $5, $6) ' +
@@ -68,7 +83,7 @@ class User {
         encryptedData.company_id,
         encryptedData.email,
         encryptedData.phone,
-        encryptedData.password_hash, // ✅ Не шифруем! Это bcrypt-хэш
+        encryptedData.password_hash,
         encryptedData.role,
         encryptedData.status || 'active'
       ]

@@ -10,26 +10,20 @@ exports.register = async (req, res) => {
   try {
     const { email, password, role, company_id } = req.body;
 
-    // 1. Проверка обязательных полей
-    if (!email || !password || !role || !company_id) {
-      return res.status(400).json({ error: 'All fields are required' });
-    }
+    console.log('Register data:', { email, role, company_id }); // 🔍
 
-    // 2. Проверка длины пароля
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
-    }
-
-    // 3. Проверка существования пользователя
     const existingUser = await User.findByEmail(email);
     if (existingUser) {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
-    // 4. Хешируем пароль
-    const hashedPassword = await bcrypt.hash(password, 12);
+    if (!password || password.length < 6) {
+      return res.status(400).json({ error: 'Password too short' });
+    }
 
-    // 5. Создаём пользователя с password_hash
+    const hashedPassword = await bcrypt.hash(password, 12);
+    console.log('Hashed password:', hashedPassword); // 🔍
+
     const user = await User.create({
       email,
       password_hash: hashedPassword,
@@ -38,18 +32,14 @@ exports.register = async (req, res) => {
       status: 'active'
     });
 
-    logger.info('User registered: ' + user.email + ', role: ' + user.role);
+    console.log('User created:', user); // 🔍
 
     res.status(201).json({
       message: 'User registered successfully',
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        companyId: user.company_id
-      }
+      user: { id: user.id, email: user.email, role: user.role, companyId: user.company_id },
     });
   } catch (err) {
+    console.error('Registration error:', err); // 🔍
     logger.error('Registration error:', err);
     res.status(500).json({ error: 'Registration failed' });
   }
@@ -59,13 +49,19 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    console.log('Login attempt:', email); // 🔍
+
     const user = await User.findByEmail(email);
     if (!user) {
+      console.log('User not found'); // 🔍
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    console.log('Stored password_hash:', user.password_hash); // 🔍
+
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
+      console.log('Password mismatch'); // 🔍
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -75,18 +71,12 @@ exports.login = async (req, res) => {
       { expiresIn: JWT_EXPIRES_IN }
     );
 
-    logger.info('User logged in: ' + user.email);
-
     res.json({
       token,
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        companyId: user.company_id
-      }
+      user: { id: user.id, email: user.email, role: user.role, companyId: user.company_id },
     });
   } catch (err) {
+    console.error('Login error:', err); // 🔍
     logger.error('Login error:', err);
     res.status(500).json({ error: 'Login failed' });
   }
