@@ -1,6 +1,12 @@
 const db = require('../config/db');
 const { generateKey, encryptData, decryptData } = require('../utils/encryption.service');
 const { MASTER_SECRET } = require('../config/crypto.config');
+const crypto = require('crypto');
+
+// Утилита для хеширования email (для поиска)
+function hashEmail(email) {
+  return crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
+}
 
 class User {
   constructor(data) {
@@ -16,29 +22,28 @@ class User {
 
   /**
    * Найти пользователя по email
-   * Шифруем email и ищем в БД
+   * Ищем по email_hash, расшифровываем email
    */
   static async findByEmail(email) {
-    // Получаем все компании
-    const companyResult = await db.query('SELECT id, name FROM companies');
-    const companies = companyResult.rows;
+    const emailHash = hashEmail(email);
 
-    for (const company of companies) {
-      const key = generateKey(company.name, MASTER_SECRET);
-      const encryptedEmail = encryptData(email, key);
-
-      // 🔍 Логируем зашифрованный email для отладки
-      console.log('🔍 Searching for encrypted email:', encryptedEmail);
-
-      const result = await db.query('SELECT * FROM users WHERE email = $1', [encryptedEmail]);
-      if (result.rows[0]) {
-        console.log('✅ User found in DB with company:', company.name);
-        return await this.afterFind(result.rows[0], company.name);
-      }
+    const result = await db.query('SELECT * FROM users WHERE email_hash = $1', [emailHash]);
+    if (!result.rows[0]) {
+      console.log('❌ User not found by email_hash:', emailHash);
+      return null;
     }
 
-    console.log('❌ User not found for email:', email);
-    return null;
+    const user = result.rows[0];
+
+    // Получаем название компании
+    const companyResult = await db.query('SELECT name FROM companies WHERE id = $1', [user.company_id]);
+    if (companyResult.rows.length === 0) {
+      throw new Error('Company not found');
+    }
+    const companyName = companyResult.rows[0].name;
+
+    // Расшифровываем только публичные поля
+    return await this.afterFind(user, companyName);
   }
 
   static async create(userData) {
@@ -50,6 +55,7 @@ class User {
     const key = generateKey(companyName, MASTER_SECRET);
 
     const encryptedData = { ...userData };
+    const emailHash = hashEmail(userData.email);
 
     if (encryptedData.email) {
       encryptedData.email = encryptData(encryptedData.email, key);
@@ -59,8 +65,8 @@ class User {
     }
 
     const result = await db.query(
-      'INSERT INTO users (company_id, email, phone, password_hash, role, status) ' +
-      'VALUES ($1, $2, $3, $4, $5, $6) ' +
+      'INSERT INTO users (company_id, email, phone, password_hash, role, status, email_hash) ' +
+      'VALUES ($1, $2, $3, $4, $5, $6, $7) ' +
       'RETURNING *',
       [
         encryptedData.company_id,
@@ -68,13 +74,17 @@ class User {
         encryptedData.phone,
         encryptedData.password_hash,
         encryptedData.role,
-        encryptedData.status || 'active'
+        encryptedData.status || 'active',
+        emailHash
       ]
     );
 
     return await this.afterFind(result.rows[0], companyName);
   }
 
+  /**
+   * Расшифровка данных после чтения из БД
+   */
   static async afterFind(data, companyName) {
     if (!data) return null;
 
