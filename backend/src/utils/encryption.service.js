@@ -12,9 +12,13 @@ function generateKey(companyName, masterSecret) {
   if (!companyName || !masterSecret) {
     throw new Error('Company name and master secret are required for key generation');
   }
+  console.log('🔐 generateKey input:', { companyName, masterSecret: '***' });
   const keyMaterial = Buffer.from(companyName.trim() + masterSecret + SALT);
-  return crypto.createHash('sha256').update(keyMaterial).digest();
+  const key = crypto.createHash('sha256').update(keyMaterial).digest();
+  console.log('🔐 generateKey output (hex):', key.toString('hex'));
+  return key;
 }
+
 
 function encryptData(data, key) {
   try {
