@@ -27,12 +27,17 @@ class User {
       const key = generateKey(company.name, MASTER_SECRET);
       const encryptedEmail = encryptData(email, key);
 
+      // 🔍 Логируем зашифрованный email для отладки
+      console.log('🔍 Searching for encrypted email:', encryptedEmail);
+
       const result = await db.query('SELECT * FROM users WHERE email = $1', [encryptedEmail]);
       if (result.rows[0]) {
+        console.log('✅ User found in DB with company:', company.name);
         return await this.afterFind(result.rows[0], company.name);
       }
     }
 
+    console.log('❌ User not found for email:', email);
     return null;
   }
 
@@ -70,9 +75,6 @@ class User {
     return await this.afterFind(result.rows[0], companyName);
   }
 
-  /**
-   * Расшифровка данных после чтения из БД
-   */
   static async afterFind(data, companyName) {
     if (!data) return null;
 
