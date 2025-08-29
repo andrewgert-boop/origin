@@ -4,31 +4,18 @@ const logger = require('../config/logger');
 
 // Константы
 const ALGORITHM = 'aes-256-gcm';
-const IV_LENGTH = 12; // 96 bits для GCM
-const SALT = 'gert_platform_salt_2025'; // Должен быть защищён в будущем
-const TAG_LENGTH = 16; // 128-bit auth tag
+const IV_LENGTH = 12;
+const SALT = 'gert_platform_salt_2025';
+const TAG_LENGTH = 16;
 
-/**
- * Генерирует ключ шифрования на основе названия компании и masterSecret
- * @param {string} companyName
- * @param {string} masterSecret
- * @returns {Buffer} 32-byte ключ
- */
 function generateKey(companyName, masterSecret) {
   if (!companyName || !masterSecret) {
     throw new Error('Company name and master secret are required for key generation');
   }
-
   const keyMaterial = Buffer.from(companyName.trim() + masterSecret + SALT);
   return crypto.createHash('sha256').update(keyMaterial).digest();
 }
 
-/**
- * Шифрует данные с использованием AES-256-GCM
- * @param {string} data - данные для шифрования
- * @param {Buffer} key - 32-byte ключ
- * @returns {string} base64: iv + encrypted + authTag
- */
 function encryptData(data, key) {
   try {
     const iv = crypto.randomBytes(IV_LENGTH);
@@ -37,7 +24,6 @@ function encryptData(data, key) {
     encrypted += cipher.final('base64');
     const authTag = cipher.getAuthTag();
 
-    // Возвращаем: iv + encrypted + authTag в base64
     return Buffer.from(iv.toString('base64') + '.' + encrypted + '.' + authTag.toString('base64')).toString('base64');
   } catch (err) {
     logger.error('Encryption failed:', err);
@@ -45,12 +31,6 @@ function encryptData(data, key) {
   }
 }
 
-/**
- * Расшифровывает данные
- * @param {string} encryptedData - base64 строка: iv.encrypted.authTag
- * @param {Buffer} key - 32-byte ключ
- * @returns {string} расшифрованные данные
- */
 function decryptData(encryptedData, key) {
   try {
     const decoded = Buffer.from(encryptedData, 'base64').toString('utf8');
