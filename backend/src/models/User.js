@@ -50,14 +50,16 @@ class User {
     const companyName = companyResult.rows[0].name;
     const key = generateKey(companyName, MASTER_SECRET);
 
-    const encryptedData = { ...userData };
+    // Создаём объект для вставки
+    const insertData = { ...userData };
     const emailHash = hashEmail(userData.email);
 
+    // Шифруем поля
     const fieldsToEncrypt = ['first_name', 'last_name', 'middle_name', 'email', 'phone'];
     for (const field of fieldsToEncrypt) {
-      if (encryptedData[field]) {
+      if (insertData[field]) {
         try {
-          encryptedData[field] = encryptData(encryptedData[field], key);
+          insertData[field] = encryptData(insertData[field], key);
         } catch (err) {
           console.error('Encryption failed for User.' + field + ':', err.message);
           throw new Error('Failed to encrypt user data');
@@ -70,15 +72,15 @@ class User {
       'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) ' +
       'RETURNING *',
       [
-        encryptedData.company_id,
-        encryptedData.first_name,
-        encryptedData.last_name,
-        encryptedData.middle_name,
-        encryptedData.email,
-        encryptedData.phone,
-        encryptedData.password_hash,
-        encryptedData.role,
-        encryptedData.status || 'active',
+        insertData.company_id,
+        insertData.first_name,
+        insertData.last_name,
+        insertData.middle_name,
+        insertData.email,
+        insertData.phone,
+        insertData.password_hash,
+        insertData.role,
+        insertData.status || 'active',
         emailHash
       ]
     );
