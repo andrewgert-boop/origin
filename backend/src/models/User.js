@@ -23,10 +23,6 @@ class User {
     this.password_hash = data.password_hash;
   }
 
-  /**
-   * Найти пользователя по email
-   * Ищем по email_hash, расшифровываем данные
-   */
   static async findByEmail(email) {
     const emailHash = hashEmail(email);
 
@@ -37,7 +33,6 @@ class User {
 
     const user = result.rows[0];
 
-    // Получаем название компании
     const companyResult = await db.query('SELECT name FROM companies WHERE id = $1', [user.company_id]);
     if (companyResult.rows.length === 0) {
       throw new Error('Company not found');
@@ -58,11 +53,15 @@ class User {
     const encryptedData = { ...userData };
     const emailHash = hashEmail(userData.email);
 
-    // Шифруем ФИО и контактные данные
     const fieldsToEncrypt = ['first_name', 'last_name', 'middle_name', 'email', 'phone'];
     for (const field of fieldsToEncrypt) {
       if (encryptedData[field]) {
-        encryptedData[field] = encryptData(encryptedData[field], key);
+        try {
+          encryptedData[field] = encryptData(encryptedData[field], key);
+        } catch (err) {
+          console.error('Encryption failed for User.' + field + ':', err.message);
+          throw new Error('Failed to encrypt user data');
+        }
       }
     }
 
@@ -87,9 +86,6 @@ class User {
     return await this.afterFind(result.rows[0], companyName);
   }
 
-  /**
-   * Расшифровка данных после чтения из БД
-   */
   static async afterFind(data, companyName) {
     if (!data) return null;
 
@@ -102,8 +98,8 @@ class User {
         try {
           result[field] = decryptData(result[field], key);
         } catch (err) {
-          console.error(\`Decryption error for User.\${field}:\`, err.message);
-          result[\`\${field}_decrypted\`] = false;
+          console.error('Decryption error for User.' + field + ':', err.message);
+          result[field + '_decrypted'] = false;
           result[field] = '[decryption error]';
         }
       }
