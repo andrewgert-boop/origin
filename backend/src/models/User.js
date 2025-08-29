@@ -70,6 +70,9 @@ class User {
     return await this.afterFind(result.rows[0], companyName);
   }
 
+  /**
+   * Расшифровка данных после чтения из БД
+   */
   static async afterFind(data, companyName) {
     if (!data) return null;
 
