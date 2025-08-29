@@ -19,6 +19,7 @@ class User {
    * Шифруем email и ищем в БД
    */
   static async findByEmail(email) {
+    // Получаем все компании
     const companyResult = await db.query('SELECT id, name FROM companies');
     const companies = companyResult.rows;
 
@@ -69,9 +70,6 @@ class User {
     return await this.afterFind(result.rows[0], companyName);
   }
 
-  /**
-   * Расшифровка данных после чтения из БД
-   */
   static async afterFind(data, companyName) {
     if (!data) return null;
 
