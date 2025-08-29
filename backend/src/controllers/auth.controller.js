@@ -1,4 +1,4 @@
-const bcrypt = require('bcryptjs');
+cconst bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const logger = require('../config/logger');
@@ -7,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 exports.register = async (req, res) => {
   try {
-    const { email, password, role, company_id } = req.body;
+    const { email, password, role, company_id, first_name, last_name, middle_name, phone } = req.body;
 
     console.log('Register: email=', email);
 
@@ -22,13 +22,26 @@ exports.register = async (req, res) => {
       password_hash: hashedPassword,
       role,
       company_id,
+      first_name,
+      last_name,
+      middle_name,
+      phone
     });
 
     console.log('User created:', user);
 
     res.status(201).json({
       message: 'User registered successfully',
-      user: { id: user.id, email: user.email, role: user.role, companyId: user.company_id },
+      user: {
+        id: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        middle_name: user.middle_name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        companyId: user.company_id
+      }
     });
   } catch (err) {
     console.error('Registration error:', err);
@@ -36,6 +49,7 @@ exports.register = async (req, res) => {
     res.status(500).json({ error: 'Registration failed' });
   }
 };
+
 
 exports.login = async (req, res) => {
   try {
