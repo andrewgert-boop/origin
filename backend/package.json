@@ -1,26 +1,40 @@
 {
   "name": "gert-platform-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend for Gert.pro platform",
   "main": "src/server.js",
   "scripts": {
-    "dev": "node src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest --runInBand --passWithNoTests",
+    "migrate": "node scripts/migrate.js",
+    "worker": "node src/workers/email.worker.js",
+    "openapi:lint": "node -e \"require('yamljs').load('docs/api/openapi.yaml'); console.log('OpenAPI OK')\""
   },
   "dependencies": {
+    "axios": "^1.7.7",
     "bcryptjs": "^2.4.3",
+    "bull": "^4.12.2",
+    "bull-board": "^6.0.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "express-rate-limit": "^7.5.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
     "express-validator": "^7.0.1",
-    "helmet": "^7.0.0",
+    "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
-    "pg": "^8.11.3",
-    "winston": "^3.8.2"
+    "nodemailer": "^6.9.14",
+    "pg": "^8.11.5",
+    "redis": "^4.6.12",
+    "winston": "^3.10.0",
+    "swagger-ui-express": "^5.0.1",
+    "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "jest": "^29.7.0",
-    "supertest": "^6.3.3"
+    "nodemon": "^3.1.4",
+    "supertest": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

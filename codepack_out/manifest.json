@@ -1,0 +1,404 @@
+{
+  "generated_at": "2025-09-02T07:57:05.169948Z",
+  "repo_name": "gert-platform",
+  "path": "/Users/gert/gert-platform",
+  "chunk_chars": 8000,
+  "max_file_chars": 120000,
+  "files": [
+    {
+      "path": "codepack.py",
+      "language": "python",
+      "chunks": 2,
+      "truncated": false
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": ".dockerignore",
+      "language": "text",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "docker-compose.yml",
+      "language": "yaml",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "archsnap.py",
+      "language": "python",
+      "chunks": 2,
+      "truncated": false
+    },
+    {
+      "path": "frontend/index.html",
+      "language": "html",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "frontend/tailwind.config.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "frontend/Dockerfile",
+      "language": "text",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "frontend/vite.config.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "frontend/package.json",
+      "language": "json",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "frontend/.eslintrc.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "frontend/src/App.tsx",
+      "language": "typescript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "frontend/src/main.tsx",
+      "language": "typescript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "archsnap_out/summary.yaml",
+      "language": "yaml",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "archsnap_out/deps_backend.txt",
+      "language": "text",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "archsnap_out/deps_frontend.txt",
+      "language": "text",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "archsnap_out/arch.md",
+      "language": "markdown",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "archsnap_out/tree.txt",
+      "language": "text",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "archsnap_out/tree.json",
+      "language": "json",
+      "chunks": 2,
+      "truncated": false
+    },
+    {
+      "path": "analyzer-portrait-of-talents/requirements.txt",
+      "language": "text",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "analyzer-portrait-of-talents/Dockerfile",
+      "language": "text",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "analyzer-portrait-of-talents/analyzer.py",
+      "language": "python",
+      "chunks": 11,
+      "truncated": false
+    },
+    {
+      "path": "analyzer-portrait-of-talents/main.py",
+      "language": "python",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/Dockerfile",
+      "language": "text",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/package.json",
+      "language": "json",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/.eslintrc.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/init-db.sql",
+      "language": "sql",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/migrations/03_create_employees_table.sql",
+      "language": "sql",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/server.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/app.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/middleware/checkRole.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/middleware/authenticateToken.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/middleware/rateLimit.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/middleware/auth.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/middleware/errorHandler.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/middleware/validation.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/middleware/validate.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/config/logger.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/config/db.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/config/crypto.config.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/utils/pagination.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/utils/encryption.service.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/models/SurveyResult.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/models/SurveyResponse.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/models/SurveyAssignment.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/models/User.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/models/Company.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/models/SurveyTemplate.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/models/Employee.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/controllers/surveyTemplate.controller.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/controllers/employee.controller.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/controllers/auth.controller.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/controllers/company.controller.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/routes/auth.routes.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/routes/companies.routes.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/routes/employees.routes.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/routes/survey.routes.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/routes/surveyTemplates.routes.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "backend/src/services/notification.service.js",
+      "language": "javascript",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "docs/technical_requirements.txt",
+      "language": "text",
+      "chunks": 4,
+      "truncated": false
+    },
+    {
+      "path": "docs/total_plan.txt",
+      "language": "text",
+      "chunks": 2,
+      "truncated": false
+    },
+    {
+      "path": "docs/frontend_plan.txt",
+      "language": "text",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": "docs/usefull.txt",
+      "language": "text",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": ".github/workflows/ci-backend.yml",
+      "language": "yaml",
+      "chunks": 1,
+      "truncated": false
+    },
+    {
+      "path": ".github/workflows/ci-frontend.yml",
+      "language": "yaml",
+      "chunks": 1,
+      "truncated": false
+    }
+  ],
+  "stats": {
+    "files": 65,
+    "chunks": 82,
+    "chars": 325524
+  }
+}

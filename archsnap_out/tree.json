@@ -1,0 +1,565 @@
+{
+  "type": "dir",
+  "name": "gert-platform",
+  "children": [
+    {
+      "type": "dir",
+      "name": ".github",
+      "children": [
+        {
+          "type": "dir",
+          "name": "workflows",
+          "children": [
+            {
+              "type": "file",
+              "name": "ci-backend.yml",
+              "size": 1277
+            },
+            {
+              "type": "file",
+              "name": "ci-frontend.yml",
+              "size": 777
+            }
+          ]
+        },
+        {
+          "type": "file",
+          "name": ".DS_Store",
+          "size": 6148
+        }
+      ]
+    },
+    {
+      "type": "dir",
+      "name": "analyzer-portrait-of-talents",
+      "children": [
+        {
+          "type": "file",
+          "name": "analyzer.py",
+          "size": 123175
+        },
+        {
+          "type": "file",
+          "name": "Dockerfile",
+          "size": 245
+        },
+        {
+          "type": "file",
+          "name": "main.py",
+          "size": 1216
+        },
+        {
+          "type": "file",
+          "name": "requirements.txt",
+          "size": 93
+        }
+      ]
+    },
+    {
+      "type": "dir",
+      "name": "archsnap_out",
+      "children": [
+        {
+          "type": "file",
+          "name": "arch.md",
+          "size": 3785
+        },
+        {
+          "type": "file",
+          "name": "deps_backend.txt",
+          "size": 195
+        },
+        {
+          "type": "file",
+          "name": "deps_frontend.txt",
+          "size": 67
+        },
+        {
+          "type": "file",
+          "name": "files_index.csv",
+          "size": 3713
+        },
+        {
+          "type": "file",
+          "name": "summary.yaml",
+          "size": 218
+        },
+        {
+          "type": "file",
+          "name": "tree.json",
+          "size": 11241
+        },
+        {
+          "type": "file",
+          "name": "tree.txt",
+          "size": 3147
+        }
+      ]
+    },
+    {
+      "type": "dir",
+      "name": "backend",
+      "children": [
+        {
+          "type": "dir",
+          "name": "logs",
+          "children": [
+            {
+              "type": "file",
+              "name": "combined.log",
+              "size": 2022
+            },
+            {
+              "type": "file",
+              "name": "error.log",
+              "size": 1644
+            }
+          ]
+        },
+        {
+          "type": "dir",
+          "name": "migrations",
+          "children": [
+            {
+              "type": "file",
+              "name": "03_create_employees_table.sql",
+              "size": 321
+            }
+          ]
+        },
+        {
+          "type": "dir",
+          "name": "src",
+          "children": [
+            {
+              "type": "dir",
+              "name": "config",
+              "children": [
+                {
+                  "type": "file",
+                  "name": "crypto.config.js",
+                  "size": 815
+                },
+                {
+                  "type": "file",
+                  "name": "db.js",
+                  "size": 980
+                },
+                {
+                  "type": "file",
+                  "name": "logger.js",
+                  "size": 1024
+                }
+              ]
+            },
+            {
+              "type": "dir",
+              "name": "controllers",
+              "children": [
+                {
+                  "type": "file",
+                  "name": "auth.controller.js",
+                  "size": 2457
+                },
+                {
+                  "type": "file",
+                  "name": "company.controller.js",
+                  "size": 2610
+                },
+                {
+                  "type": "file",
+                  "name": "employee.controller.js",
+                  "size": 3035
+                },
+                {
+                  "type": "file",
+                  "name": "surveyTemplate.controller.js",
+                  "size": 2771
+                }
+              ]
+            },
+            {
+              "type": "dir",
+              "name": "middleware",
+              "children": [
+                {
+                  "type": "file",
+                  "name": "auth.js",
+                  "size": 0
+                },
+                {
+                  "type": "file",
+                  "name": "authenticateToken.js",
+                  "size": 581
+                },
+                {
+                  "type": "file",
+                  "name": "checkRole.js",
+                  "size": 203
+                },
+                {
+                  "type": "file",
+                  "name": "errorHandler.js",
+                  "size": 0
+                },
+                {
+                  "type": "file",
+                  "name": "rateLimit.js",
+                  "size": 297
+                },
+                {
+                  "type": "file",
+                  "name": "validate.js",
+                  "size": 745
+                },
+                {
+                  "type": "file",
+                  "name": "validation.js",
+                  "size": 0
+                }
+              ]
+            },
+            {
+              "type": "dir",
+              "name": "migrations",
+              "children": []
+            },
+            {
+              "type": "dir",
+              "name": "models",
+              "children": [
+                {
+                  "type": "file",
+                  "name": "Company.js",
+                  "size": 2471
+                },
+                {
+                  "type": "file",
+                  "name": "Employee.js",
+                  "size": 8063
+                },
+                {
+                  "type": "file",
+                  "name": "SurveyAssignment.js",
+                  "size": 2602
+                },
+                {
+                  "type": "file",
+                  "name": "SurveyResponse.js",
+                  "size": 888
+                },
+                {
+                  "type": "file",
+                  "name": "SurveyResult.js",
+                  "size": 1552
+                },
+                {
+                  "type": "file",
+                  "name": "SurveyTemplate.js",
+                  "size": 2778
+                },
+                {
+                  "type": "file",
+                  "name": "User.js",
+                  "size": 3708
+                }
+              ]
+            },
+            {
+              "type": "dir",
+              "name": "routes",
+              "children": [
+                {
+                  "type": "file",
+                  "name": "auth.routes.js",
+                  "size": 471
+                },
+                {
+                  "type": "file",
+                  "name": "companies.routes.js",
+                  "size": 913
+                },
+                {
+                  "type": "file",
+                  "name": "employees.routes.js",
+                  "size": 756
+                },
+                {
+                  "type": "file",
+                  "name": "survey.routes.js",
+                  "size": 7625
+                },
+                {
+                  "type": "file",
+                  "name": "surveyTemplates.routes.js",
+                  "size": 977
+                }
+              ]
+            },
+            {
+              "type": "dir",
+              "name": "services",
+              "children": [
+                {
+                  "type": "file",
+                  "name": "notification.service.js",
+                  "size": 4724
+                }
+              ]
+            },
+            {
+              "type": "dir",
+              "name": "tests",
+              "children": []
+            },
+            {
+              "type": "dir",
+              "name": "utils",
+              "children": [
+                {
+                  "type": "file",
+                  "name": "encryption.service.js",
+                  "size": 2119
+                },
+                {
+                  "type": "file",
+                  "name": "pagination.js",
+                  "size": 216
+                }
+              ]
+            },
+            {
+              "type": "file",
+              "name": ".DS_Store",
+              "size": 8196
+            },
+            {
+              "type": "file",
+              "name": "app.js",
+              "size": 1729
+            },
+            {
+              "type": "file",
+              "name": "server.js",
+              "size": 306
+            }
+          ]
+        },
+        {
+          "type": "file",
+          "name": ".DS_Store",
+          "size": 6148
+        },
+        {
+          "type": "file",
+          "name": ".env",
+          "size": 314
+        },
+        {
+          "type": "file",
+          "name": ".env.example",
+          "size": 0
+        },
+        {
+          "type": "file",
+          "name": ".eslintrc.js",
+          "size": 419
+        },
+        {
+          "type": "file",
+          "name": "Dockerfile",
+          "size": 318
+        },
+        {
+          "type": "file",
+          "name": "init-db.sql",
+          "size": 299
+        },
+        {
+          "type": "file",
+          "name": "package-lock.json",
+          "size": 195265
+        },
+        {
+          "type": "file",
+          "name": "package.json",
+          "size": 566
+        }
+      ]
+    },
+    {
+      "type": "dir",
+      "name": "codepack_out",
+      "children": [
+        {
+          "type": "file",
+          "name": "code.jsonl",
+          "size": 500442
+        },
+        {
+          "type": "file",
+          "name": "file_list.csv",
+          "size": 3323
+        },
+        {
+          "type": "file",
+          "name": "manifest.json",
+          "size": 8976
+        },
+        {
+          "type": "file",
+          "name": "prompt_user_en.md",
+          "size": 827
+        },
+        {
+          "type": "file",
+          "name": "prompt_user_ru.md",
+          "size": 1401
+        },
+        {
+          "type": "file",
+          "name": "README.md",
+          "size": 884
+        }
+      ]
+    },
+    {
+      "type": "dir",
+      "name": "docs",
+      "children": [
+        {
+          "type": "dir",
+          "name": "api",
+          "children": []
+        },
+        {
+          "type": "dir",
+          "name": "deployment",
+          "children": []
+        },
+        {
+          "type": "file",
+          "name": ".DS_Store",
+          "size": 6148
+        },
+        {
+          "type": "file",
+          "name": "frontend_plan.txt",
+          "size": 10561
+        },
+        {
+          "type": "file",
+          "name": "technical_requirements.txt",
+          "size": 213781
+        },
+        {
+          "type": "file",
+          "name": "total_plan.txt",
+          "size": 17404
+        },
+        {
+          "type": "file",
+          "name": "usefull.txt",
+          "size": 0
+        }
+      ]
+    },
+    {
+      "type": "dir",
+      "name": "frontend",
+      "children": [
+        {
+          "type": "dir",
+          "name": "public",
+          "children": []
+        },
+        {
+          "type": "dir",
+          "name": "src",
+          "children": [
+            {
+              "type": "file",
+              "name": "App.tsx",
+              "size": 365
+            },
+            {
+              "type": "file",
+              "name": "main.tsx",
+              "size": 281
+            }
+          ]
+        },
+        {
+          "type": "file",
+          "name": ".DS_Store",
+          "size": 6148
+        },
+        {
+          "type": "file",
+          "name": ".eslintrc.js",
+          "size": 676
+        },
+        {
+          "type": "file",
+          "name": "Dockerfile",
+          "size": 401
+        },
+        {
+          "type": "file",
+          "name": "index.html",
+          "size": 362
+        },
+        {
+          "type": "file",
+          "name": "package-lock.json",
+          "size": 401494
+        },
+        {
+          "type": "file",
+          "name": "package.json",
+          "size": 1294
+        },
+        {
+          "type": "file",
+          "name": "tailwind.config.js",
+          "size": 378
+        },
+        {
+          "type": "file",
+          "name": "vite.config.js",
+          "size": 418
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": ".dockerignore",
+      "size": 60
+    },
+    {
+      "type": "file",
+      "name": ".DS_Store",
+      "size": 12292
+    },
+    {
+      "type": "file",
+      "name": "archsnap.py",
+      "size": 10959
+    },
+    {
+      "type": "file",
+      "name": "codepack.py",
+      "size": 11607
+    },
+    {
+      "type": "file",
+      "name": "docker-compose.yml",
+      "size": 1409
+    },
+    {
+      "type": "file",
+      "name": "README.md",
+      "size": 2350
+    }
+  ]
+}

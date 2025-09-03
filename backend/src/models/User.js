@@ -1,113 +1,96 @@
-const db = require('../config/db');
-const { generateKey, encryptData, decryptData } = require('../utils/encryption.service');
-const { MASTER_SECRET } = require('../config/crypto.config');
-const crypto = require('crypto');
+// backend/src/models/User.js
+// Модель пользователя с шифрованием email/phone через AES-256-GCM.
+// В базе поля email/phone хранятся как JSONB: { cipher, iv, tag }.
 
-// Утилита для хеширования email (для поиска)
-function hashEmail(email) {
-  return crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
-}
+const db = require('../config/db');
+const { encryptField, decryptField } = require('../utils/encryption.service');
 
 class User {
-  constructor(data) {
-    this.id = data.id;
-    this.company_id = data.company_id;
-    this.first_name = data.first_name || null;
-    this.last_name = data.last_name || null;
-    this.middle_name = data.middle_name || null;
-    this.email = data.email;
-    this.phone = data.phone || null;
-    this.role = data.role;
-    this.status = data.status;
-    this.created_at = data.created_at;
-    this.password_hash = data.password_hash;
-  }
+  static async create({ company_id, email, phone, password_hash, role='user', status='active' }) {
+    // Получаем имя компании для генерации ключа
+    const { rows: crows } = await db.query('SELECT name FROM companies WHERE id = $1', [company_id]);
+    const companyName = crows[0]?.name || 'default_company';
 
-  static async findByEmail(email) {
-    const emailHash = hashEmail(email);
+    const emailEnc = email ? encryptField(email, companyName) : null;
+    const phoneEnc = phone ? encryptField(phone, companyName) : null;
 
-    const result = await db.query('SELECT * FROM users WHERE email_hash = $1', [emailHash]);
-    if (!result.rows[0]) {
-      return null;
-    }
-
-    const user = result.rows[0];
-
-    const companyResult = await db.query('SELECT name FROM companies WHERE id = $1', [user.company_id]);
-    if (companyResult.rows.length === 0) {
-      throw new Error('Company not found');
-    }
-    const companyName = companyResult.rows[0].name;
-
-    return await this.afterFind(user, companyName);
-  }
-
-  static async create(userData) {
-    const companyResult = await db.query('SELECT name FROM companies WHERE id = $1', [userData.company_id]);
-    if (companyResult.rows.length === 0) {
-      throw new Error('Company not found');
-    }
-    const companyName = companyResult.rows[0].name;
-    const key = generateKey(companyName, MASTER_SECRET);
-
-    // Создаём объект для вставки
-    const insertData = { ...userData };
-    const emailHash = hashEmail(userData.email);
-
-    // Шифруем поля
-    const fieldsToEncrypt = ['first_name', 'last_name', 'middle_name', 'email', 'phone'];
-    for (const field of fieldsToEncrypt) {
-      if (insertData[field]) {
-        try {
-          insertData[field] = encryptData(insertData[field], key);
-        } catch (err) {
-          console.error('Encryption failed for User.' + field + ':', err.message);
-          throw new Error('Failed to encrypt user data');
-        }
-      }
-    }
-
-    const result = await db.query(
-      'INSERT INTO users (company_id, first_name, last_name, middle_name, email, phone, password_hash, role, status, email_hash) ' +
-      'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) ' +
-      'RETURNING *',
-      [
-        insertData.company_id,
-        insertData.first_name,
-        insertData.last_name,
-        insertData.middle_name,
-        insertData.email,
-        insertData.phone,
-        insertData.password_hash,
-        insertData.role,
-        insertData.status || 'active',
-        emailHash
-      ]
+    const { rows } = await db.query(
+      `INSERT INTO users (company_id, email, phone, password_hash, role, status)
+       VALUES ($1,$2,$3,$4,$5,$6)
+       RETURNING id, company_id, email, phone, role, status, created_at`,
+      [company_id, emailEnc, phoneEnc, password_hash, role, status]
     );
 
-    return await this.afterFind(result.rows[0], companyName);
+    const u = rows[0];
+    // Дешифруем для отдачи наружу
+    return {
+      ...u,
+      email: decryptField(u.email, companyName),
+      phone: decryptField(u.phone, companyName),
+    };
   }
 
-  static async afterFind(data, companyName) {
-    if (!data) return null;
+  static async findById(id) {
+    const { rows } = await db.query(
+      `SELECT u.*, c.name AS company_name
+       FROM users u LEFT JOIN companies c ON c.id = u.company_id
+       WHERE u.id = $1`, [id]
+    );
+    const u = rows[0];
+    if (!u) return null;
+    return {
+      ...u,
+      email: decryptField(u.email, u.company_name || 'default_company'),
+      phone: decryptField(u.phone, u.company_name || 'default_company'),
+    };
+  }
 
-    const key = generateKey(companyName, MASTER_SECRET);
-    const result = { ...data };
+  static async update(id, payload) {
+    // Считываем компанию
+    const { rows: r } = await db.query(
+      `SELECT u.id, u.company_id, c.name AS company_name
+       FROM users u LEFT JOIN companies c ON c.id = u.company_id WHERE u.id = $1`, [id]
+    );
+    if (!r[0]) return null;
+    const companyName = r[0].company_name || 'default_company';
 
-    const fieldsToDecrypt = ['first_name', 'last_name', 'middle_name', 'email', 'phone'];
-    for (const field of fieldsToDecrypt) {
-      if (result[field]) {
-        try {
-          result[field] = decryptData(result[field], key);
-        } catch (err) {
-          console.error('Decryption error for User.' + field + ':', err.message);
-          result[field + '_decrypted'] = false;
-          result[field] = '[decryption error]';
-        }
-      }
+    const fields = [];
+    const values = [];
+    let idx = 1;
+
+    if (payload.email !== undefined) {
+      fields.push(`email = $${idx++}`);
+      values.push(payload.email ? encryptField(payload.email, companyName) : null);
+    }
+    if (payload.phone !== undefined) {
+      fields.push(`phone = $${idx++}`);
+      values.push(payload.phone ? encryptField(payload.phone, companyName) : null);
+    }
+    if (payload.password_hash !== undefined) {
+      fields.push(`password_hash = $${idx++}`);
+      values.push(payload.password_hash);
+    }
+    if (payload.role !== undefined) {
+      fields.push(`role = $${idx++}`);
+      values.push(payload.role);
+    }
+    if (payload.status !== undefined) {
+      fields.push(`status = $${idx++}`);
+      values.push(payload.status);
     }
 
-    return new User(result);
+    if (!fields.length) return await this.findById(id);
+
+    values.push(id);
+    const { rows } = await db.query(
+      `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`, values
+    );
+    const u = rows[0];
+    return {
+      ...u,
+      email: decryptField(u.email, companyName),
+      phone: decryptField(u.phone, companyName),
+    };
   }
 }
 

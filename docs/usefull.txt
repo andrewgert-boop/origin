@@ -1,0 +1,83 @@
+Git
+
+git add .
+git commit -m "fix: findByEmail now searches in encrypted email"
+git push
+docker compose down
+docker compose up --build
+
+# 1. Добавьте ВСЕ измененные и новые файлы в "промежуточную область" (staging area)
+git add .
+# ИЛИ добавьте конкретный файл
+git add index.html style.css
+
+# 2. Снова проверьте статус. Вы увидите файлы, готовые к коммиту (зеленые).
+git status
+
+# 3. Создайте коммит - точку сохранения с комментарием.
+git commit -m "Добавил главную страницу и стили"
+# Всегда пишите осмысленные комментарии! Вы будете благодарить себя later.
+
+# 4. Посмотрите историю коммитов
+git log
+
+# 1. Свяжите ваш локальный репозиторий с удаленным (назовите удалённый репозиторий 'origin' - это стандарт)
+git remote add origin https://github.com/your-username/your-repo-name.git
+
+# 2. Загрузите (запушите) вашу ветку 'main' на сервер 'origin'
+# Флаг -u запоминает связь, чтобы в будущем можно было просто писать 'git push'
+git push -u origin main
+
+# Скачать изменения с удаленного сервера и объединить с вашей локальной версией
+git pull
+
+# Загрузить ваши коммиты на удаленный сервер
+git push
+
+# Клонировать чужой репозиторий к себе на компьютер
+git clone https://github.com/someuser/some-project.git
+
+
+# 1) Собрать и поднять
+docker compose up -d --build
+
+# 2) Прогнать миграции (в контейнере backend они запускаются автоматически, но можно вручную)
+docker compose exec backend npm run migrate
+
+# 3) Проверки доступности
+curl http://localhost:3000/health        # → { ok: true, service: 'backend' }
+curl http://localhost:8001/health        # → { ok: true, service: 'analyzer' }
+
+# 4) Примеры потока по опросу (нужны реальные company/user/employee/template):
+# POST /api/survey-assignments (JWT обязателен, роль admin|user)
+# GET  /api/public/survey/:uniqueLink
+# POST /api/public/survey/:uniqueLink  (стрим ответов M1/M2)
+# POST /api/public/survey/:uniqueLink/complete { module: 'm1' | 'm2' }
+# GET  /api/survey-results?assignment_id=...
+
+---------------- Архитектура --------------]
+# из корня твоего репо
+python3 archsnap.py --out archsnap_out
+
+Получишь:
+archsnap_out/arch.md — сводка для нейросети (включая Mermaid-диаграмму).
+tree.json, tree.txt, files_index.csv — структура проекта.
+summary.yaml — стек/инфра (эвристики).
+deps_backend.txt, deps_frontend.txt — зависимости (best-effort).
+
+Как передавать в нейросеть
+Отдай модели файлы archsnap_out/arch.md и summary.yaml. При желании добавь tree.txt (как контекст) и конкретные deps_*.txt.
+---------------- Код для ИИ ---------------
+Как сгенерировать пакет кода для ИИ
+1) Одним скриптом
+Из корня репозитория:
+python3 codepack.py --out codepack_out
+Что получится:
+codepack_out/code.jsonl — весь код, разбитый на компактные чанки (1 JSON-объект на строку).
+codepack_out/manifest.json — карта чанков/файлов, статистика.
+codepack_out/file_list.csv — список включённых файлов (удобно проверить).
+codepack_out/prompt_user_ru.md / prompt_user_en.md — готовые промпты для ИИ.
+
+3) Что отдавать ИИ и в каком порядке
+Сначала arch.md + summary.yaml → просим дать обзор/риски/план.
+Затем code.jsonl (одним файлом или порциями) → просим детальное ревью и рефакторинг.

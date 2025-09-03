@@ -1,4 +1,3 @@
-
 services:
   postgres:
     image: postgres:15-alpine
@@ -10,12 +9,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U gert_user -d gert_platform"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   redis:
     image: redis:7-alpine
@@ -23,35 +21,68 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes
+
+  analyzer:
+    build: ./analyzer-portrait-of-talents
+    environment:
+      # FastAPI подключается к Postgres по единому DSN
+      DATABASE_URL: postgres://gert_user:gert_password@postgres:5432/gert_platform
+    ports:
+      # На хосте 8001, внутри контейнера FastAPI слушает 8000
+      - "8001:8000"
+    depends_on:
+      - postgres
 
   backend:
     build: ./backend
+    environment:
+      NODE_ENV: development
+      JWT_SECRET: "devsecret"
+      DATABASE_URL: postgres://gert_user:gert_password@postgres:5432/gert_platform
+      ANALYZER_BASE_URL: http://analyzer:8000
+      MASTER_SECRET: "change_me_master_secret"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_USER: ""
+      SMTP_PASS: ""
+      SMTP_FROM: "no-reply@gert.pro"
+      DB_SSL_DISABLE: "1"
     ports:
       - "3000:3000"
-    environment:
-      NODE_ENV: production
-      DATABASE_URL: postgresql://gert_user:gert_password@postgres:5432/gert_platform
-      JWT_SECRET: your-super-strong-secret-key-change-in-production
-      FRONTEND_URL: http://localhost:5173
-      DB_SSL_DISABLE: 'true'
-      environment:
-      MASTER_SECRET: your-super-strong-master-secret-key-change-in-production
-    volumes:
-      - /app/node_modules
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    command: npm run dev
+      - postgres
+      - analyzer
+      - redis
+    command: sh -c "npm ci && npm run migrate && npm run dev"
+
+  worker:
+    build: ./backend
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://gert_user:gert_password@postgres:5432/gert_platform
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_USER: ""
+      SMTP_PASS: ""
+      SMTP_FROM: "no-reply@gert.pro"
+    depends_on:
+      - redis
+      - postgres
+    command: sh -c "npm ci && npm run worker"
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "8025:8025"
 
   frontend:
     build: ./frontend
     ports:
       - "5173:5173"
-    volumes:
-      - /app/node_modules
     depends_on:
       - backend
 

@@ -1,66 +1,53 @@
-// Сервис шифрования данных
+// backend/src/utils/encryption.service.js
+// Динамическое шифрование AES-256-GCM с IV и тегом аутентификации.
+// Ключ генерируется на основе MASTER_SECRET + названия компании (или статического соли по компании).
+
 const crypto = require('crypto');
-const logger = require('../config/logger');
+const MASTER = process.env.MASTER_SECRET || 'change_me_master_secret';
 
-// Константы
-const ALGORITHM = 'aes-256-gcm';
-const IV_LENGTH = 12;
-const SALT = 'gert_platform_salt_2025';
-const TAG_LENGTH = 16;
-
-function generateKey(companyName, masterSecret) {
-  if (!companyName || !masterSecret) {
-    throw new Error('Company name and master secret are required for key generation');
-  }
-  console.log('🔐 generateKey input:', { companyName, masterSecret: '***' });
-  const keyMaterial = Buffer.from(companyName.trim() + masterSecret + SALT);
-  const key = crypto.createHash('sha256').update(keyMaterial).digest();
-  console.log('🔐 generateKey output (hex):', key.toString('hex'));
-  return key;
+// Генерация детерминированного ключа 32 байта из master + companyName (+ salt)
+function generateKey(companyName, salt='') {
+  const hash = crypto.createHash('sha256');
+  hash.update(String(companyName || 'default_company'));
+  hash.update(String(MASTER));
+  hash.update(String(salt || 'static_salt'));
+  return hash.digest().subarray(0, 32); // 256 бит
 }
 
-
-function encryptData(data, key) {
-  try {
-    const iv = crypto.randomBytes(IV_LENGTH);
-    const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
-    let encrypted = cipher.update(data, 'utf8', 'base64');
-    encrypted += cipher.final('base64');
-    const authTag = cipher.getAuthTag();
-
-    return Buffer.from(iv.toString('base64') + '.' + encrypted + '.' + authTag.toString('base64')).toString('base64');
-  } catch (err) {
-    logger.error('Encryption failed:', err);
-    throw new Error('Data encryption failed');
-  }
+// Шифрует произвольный JSON-значение (строку, объект, число)
+function encryptData(value, key) {
+  const iv = crypto.randomBytes(12); // GCM = 96 бит IV
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  const plain = Buffer.from(JSON.stringify(value), 'utf8');
+  const encrypted = Buffer.concat([cipher.update(plain), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return {
+    cipher: encrypted.toString('base64'),
+    iv: iv.toString('base64'),
+    tag: tag.toString('base64'),
+  };
 }
 
-function decryptData(encryptedData, key) {
-  try {
-    const decoded = Buffer.from(encryptedData, 'base64').toString('utf8');
-    const [ivB64, encryptedB64, authTagB64] = decoded.split('.');
-
-    if (!ivB64 || !encryptedB64 || !authTagB64) {
-      throw new Error('Invalid encrypted data format');
-    }
-
-    const iv = Buffer.from(ivB64, 'base64');
-    const authTag = Buffer.from(authTagB64, 'base64');
-    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
-    decipher.setAuthTag(authTag);
-
-    let decrypted = decipher.update(encryptedB64, 'base64', 'utf8');
-    decrypted += decipher.final('utf8');
-
-    return decrypted;
-  } catch (err) {
-    logger.error('Decryption failed:', err);
-    throw new Error('Data decryption failed');
-  }
+// Расшифровывает JSON-значение
+function decryptData(pack, key) {
+  if (!pack || !pack.cipher) return null;
+  const iv = Buffer.from(pack.iv, 'base64');
+  const tag = Buffer.from(pack.tag, 'base64');
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+  decipher.setAuthTag(tag);
+  const enc = Buffer.from(pack.cipher, 'base64');
+  const plain = Buffer.concat([decipher.update(enc), decipher.final()]);
+  return JSON.parse(plain.toString('utf8'));
 }
 
-module.exports = {
-  generateKey,
-  encryptData,
-  decryptData,
-};
+// Вспомогательные обёртки для полей: шифруем объектом {cipher,iv,tag}
+function encryptField(obj, companyName, salt='') {
+  const key = generateKey(companyName, salt);
+  return encryptData(obj, key);
+}
+function decryptField(pack, companyName, salt='') {
+  const key = generateKey(companyName, salt);
+  return decryptData(pack, key);
+}
+
+module.exports = { generateKey, encryptData, decryptData, encryptField, decryptField };

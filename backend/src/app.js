@@ -1,3 +1,7 @@
+const { mountSwagger } = require('./swagger');
+// backend/src/app.js
+// Инициализация Express: security, парсинг, маршруты, обработчики ошибок.
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -7,43 +11,32 @@ const authRoutes = require('./routes/auth.routes');
 const companyRoutes = require('./routes/companies.routes');
 const employeeRoutes = require('./routes/employees.routes');
 const surveyTemplateRoutes = require('./routes/surveyTemplates.routes');
+const surveyRoutes = require('./routes/survey.routes');
+
 const logger = require('./config/logger');
 
 const app = express();
 
-// Security middleware
-app.use(helmet({
-  contentSecurityPolicy: false,
-  crossOriginEmbedderPolicy: false,
-}));
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true,
-}));
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(cors());
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 1000 }));
+app.use(express.json({ limit: '2mb' }));
 
-// Rate limiting
-app.use('/api/auth', require('./middleware/rateLimit'));
+app.get('/health', (_, res) => res.json({ ok: true, service: 'backend' }));
 
-// Routes
+
+mountSwagger(app);
 app.use('/api/auth', authRoutes);
 app.use('/api/companies', companyRoutes);
-app.use('/api/employees', employeeRoutes);
+app.use('/api/companies/:companyId/employees', employeeRoutes);
 app.use('/api/survey-templates', surveyTemplateRoutes);
+app.use('/api', surveyRoutes);
 
-// Health check
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', service: 'GERT Platform Backend' });
-});
+// 404
+app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
 
-// 404 для несуществующих маршрутов
-app.use('*', (req, res) => {
-  logger.warn(`Route not found: ${req.method} ${req.path}`);
-  res.status(404).json({ error: 'Route not found' });
-});
-
-// Обработчик ошибок
+// Глобальный обработчик ошибок
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   logger.error(`${err.status || 500} - ${err.message} - ${req.method} ${req.url}`);
   res.status(err.status || 500).json({

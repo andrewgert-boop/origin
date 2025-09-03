@@ -1,0 +1,4 @@
+
+# package manager list
+/Users/gert/gert-platform
+└── (empty)

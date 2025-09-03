@@ -1,24 +1,21 @@
-# frontend/Dockerfile
 FROM node:18-alpine
 
 WORKDIR /app
 
+# Устанавливаем зависимости
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install
 
-# Устанавливаем esbuild-wasm для совместимости с Apple Silicon (arm64)
+# Используем esbuild-wasm для совместимости
 RUN npm install esbuild-wasm
+ENV USE_WASM=true
 
+# Копируем код
 COPY . .
 
-# Используем esbuild-wasm вместо нативного esbuild
-ENV ESBUILD_BINARY_NAME=esbuild-wasm
-
-# Сборка проекта
+# Собираем с esbuild-wasm
 RUN npm run build
 
-# Устанавливаем serve для раздачи статики
+# Сервим
 RUN npm install -g serve
-
-# Запуск сервера
 CMD ["serve", "-s", "dist"]
