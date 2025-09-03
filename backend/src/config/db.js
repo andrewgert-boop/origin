@@ -1,31 +1,32 @@
+// backend/src/config/db.js
+// Безопасный пул PG: не коннектимся на импорт, без фатального падения при недоступной БД.
+// Подключаемся только при первом query(). SSL отключаем, если DB_SSL_DISABLE=1.
+
 const { Pool } = require('pg');
 
-// Проверка наличия DATABASE_URL
-if (!process.env.DATABASE_URL) {
-  console.error('❌ ОШИБКА: DATABASE_URL не установлена в переменных окружения');
-  process.exit(1);
-}
+const connectionString = process.env.DATABASE_URL || 'postgres://gert_user:gert_password@postgres:5432/gert_platform';
+
+const ssl =
+  process.env.DB_SSL_DISABLE === '1'
+    ? false
+    : { rejectUnauthorized: false };
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DB_SSL_DISABLE
-    ? false
-    : process.env.NODE_ENV === 'production'
-      ? { rejectUnauthorized: false }
-      : false,
+  connectionString,
+  ssl,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
 });
 
-// Логируем успешное подключение
-pool.on('connect', () => {
-  console.log('✅ Подключено к PostgreSQL: gert_platform');
-});
+// НЕ делаем тестовый connect() на импорт — пусть первый query() инициирует подключение.
 
-// Логируем ошибки подключения
 pool.on('error', (err) => {
-  console.error('❌ Ошибка подключения к PostgreSQL:', err);
+  // Логируем, но не валим процесс
+  console.error('PG pool error:', err.message);
 });
 
-// Экспортируем метод query для использования в моделях
 module.exports = {
   query: (text, params) => pool.query(text, params),
+  pool,
 };

@@ -1,36 +1,29 @@
-const winston = require('winston');
-
-// Создаём папку logs при старте (если её нет)
-const fs = require('fs');
+// backend/src/config/logger.js
+// Простой winston-логгер: пишет в консоль и файл (если доступен).
+const { createLogger, format, transports } = require('winston');
 const path = require('path');
-const logDir = path.join(__dirname, '../../logs');
 
-if (!fs.existsSync(logDir)) {
-  try {
-    fs.mkdirSync(logDir, { recursive: true });
-  } catch (err) {
-    console.warn('Could not create log directory, using console only:', err.message);
-  }
-}
-
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
+const logger = createLogger({
+  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  format: format.combine(
+    format.timestamp(),
+    format.errors({ stack: true }),
+    format.printf(({ level, message, timestamp, stack }) =>
+      `${timestamp} [${level}] ${stack || message}`
+    )
   ),
-  defaultMeta: { service: 'gert-backend' },
   transports: [
-    new winston.transports.File({ filename: path.join(logDir, 'error.log'), level: 'error' }),
-    new winston.transports.File({ filename: path.join(logDir, 'combined.log') }),
+    new transports.Console(),
+    // Файловый транспорт не критичен: если нет прав, winston сам упадёт — оборачиваем созданием позже при старте, но для простоты оставим.
   ],
 });
 
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.simple(),
-  }));
+// Попытка добавить файл — не критично при ошибке
+try {
+  const file = new transports.File({ filename: path.join('/app/logs', 'app.log') });
+  logger.add(file);
+} catch (e) {
+  // игнор
 }
 
 module.exports = logger;

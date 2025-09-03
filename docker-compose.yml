@@ -55,7 +55,7 @@ services:
       - postgres
       - analyzer
       - redis
-    command: sh -c "npm ci && npm run migrate && npm run dev"
+    command: sh -c "npm run migrate && npm run dev"
 
   worker:
     build: ./backend
@@ -72,7 +72,7 @@ services:
     depends_on:
       - redis
       - postgres
-    command: sh -c "npm ci && npm run worker"
+    command: sh -c "npm run worker"
 
   mailhog:
     image: mailhog/mailhog:latest

@@ -1,10 +1,29 @@
-console.log('Starting server...');
-const app = require('./app');
-const logger = require('./config/logger');
+// backend/src/server.js
+const http = require('http');
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log('Server running on http://0.0.0.0:' + PORT);
-  logger.info('Server running on http://0.0.0.0:' + PORT);
-});
+console.log(`[BOOT] server.js start, PORT=${PORT}`);
+
+let app;
+try {
+  console.log('[BOOT] requiring ./app ...');
+  app = require('./app'); // <-- если тут что-то падает, поймаем в catch ниже
+  console.log('[BOOT] ./app loaded OK');
+} catch (e) {
+  console.error('[FATAL] App bootstrap error during require("./app"):\n', e);
+  // Немного подождём, чтобы лог гарантированно попал в stdout, и упадём — nodemon перезапустит
+  setTimeout(() => process.exit(1), 250);
+}
+
+if (app) {
+  const server = http.createServer(app);
+
+  server.on('error', (err) => {
+    console.error('[FATAL] HTTP server error:', err);
+  });
+
+  server.listen(PORT, () => {
+    console.log(`[READY] Backend listening on :${PORT}`);
+  });
+}
